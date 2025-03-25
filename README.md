@@ -6,6 +6,7 @@
 
 **Members:**
 - Kashika Agarwal (Leader)
+- Animesh Tripathy
 - Amitesh Raj
 - Siddharth Srivastava
 - Faizal
