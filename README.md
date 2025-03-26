@@ -90,13 +90,3 @@ Doc-Classifiers is an AI-powered document processing system that utilizes Azure 
 ## Demo
 
 A video demonstration of the project is available at: [Demo Video](https://drive.google.com/file/d/1zirau03TG5Uw-IfOgVOAlqQw7uKCMY9V/view?usp=sharing)
-
-## Note
-
-Ensure that you have the necessary Azure subscriptions and resources set up before running the application. The project uses various Azure AI services, so make sure you have the required permissions and credits in your Azure account.
-
-Citations:
-[1] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/51018129/7087857d-2c94-43cd-89c6-ad79a3ff7dd3/paste.txt
-
----
-Answer from Perplexity: pplx.ai/share
