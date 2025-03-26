@@ -19,6 +19,10 @@ load_dotenv()
 DOC_INTEL_ENDPOINT = os.getenv("AZURE_FORM_RECOGNIZER_ENDPOINT")
 DOC_INTEL_KEY = os.getenv("AZURE_FORM_RECOGNIZER_KEY")
 OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT").rstrip('/')
+if OPENAI_ENDPOINT:
+    OPENAI_ENDPOINT = OPENAI_ENDPOINT.rstrip('/')
+else:
+    raise ValueError("AZURE_OPENAI_ENDPOINT is not set. Check your environment variables.")
 OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
 OPENAI_DEPLOYMENT = os.getenv("OPENAI_DEPLOYMENT")
 OPENAI_API_VERSION = "2024-02-15-preview"
