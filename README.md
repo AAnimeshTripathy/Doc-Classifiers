@@ -11,6 +11,17 @@
 - Siddharth Srivastava
 - Faizal
 
+## Project Deployed On
+
+The project is deployed and accessible at: [Doc-Classifiers App](https://doc-classifiers.streamlit.app/)
+
+## Demo
+
+A video demonstration of the project is available at: [Demo Video](https://drive.google.com/file/d/1zirau03TG5Uw-IfOgVOAlqQw7uKCMY9V/view?usp=sharing)
+
+For Research Documentation , refer to [Working Document](https://docs.google.com/document/d/1Dl_bjsQq41KzWfLyvFCu8JYFdLnUXUdSsmfRmwboSNc/edit?usp=sharing).
+
+
 ## Project Overview
 
 Doc-Classifiers is an AI-powered document processing system that utilizes Azure AI services to analyze, classify, and summarize documents. The system can handle various document types including PDF, DOCX, PNG, and JPG files.
@@ -86,9 +97,3 @@ Doc-Classifiers is an AI-powered document processing system that utilizes Azure 
    - Key Terms
    - References & Links
    - Images (if present in the document)
-
-## Demo
-
-A video demonstration of the project is available at: [Demo Video](https://drive.google.com/file/d/1zirau03TG5Uw-IfOgVOAlqQw7uKCMY9V/view?usp=sharing)
-
-For Research Documentation , refer to [Working Document](https://docs.google.com/document/d/1Dl_bjsQq41KzWfLyvFCu8JYFdLnUXUdSsmfRmwboSNc/edit?usp=sharing).
