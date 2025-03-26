@@ -90,3 +90,5 @@ Doc-Classifiers is an AI-powered document processing system that utilizes Azure 
 ## Demo
 
 A video demonstration of the project is available at: [Demo Video](https://drive.google.com/file/d/1zirau03TG5Uw-IfOgVOAlqQw7uKCMY9V/view?usp=sharing)
+
+For Research Documentation , refer to [Working Document](https://docs.google.com/document/d/1Dl_bjsQq41KzWfLyvFCu8JYFdLnUXUdSsmfRmwboSNc/edit?usp=sharing).
