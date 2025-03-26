@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 import os
 import re
 import io
-import time
+from PIL import Image
 
 # Load environment variables
 load_dotenv()
@@ -21,7 +21,7 @@ load_dotenv()
 # Azure Configuration
 DOC_INTEL_ENDPOINT = os.getenv("AZURE_FORM_RECOGNIZER_ENDPOINT")
 DOC_INTEL_KEY = os.getenv("AZURE_FORM_RECOGNIZER_KEY")
-OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT").rstrip('/')
+OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT").rstrip('/') # Remove trailing slash
 OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
 OPENAI_DEPLOYMENT = os.getenv("OPENAI_DEPLOYMENT")
 OPENAI_API_VERSION = "2024-02-15-preview"
@@ -33,6 +33,7 @@ AZURE_COMPUTER_VISION_KEY = os.getenv("AZURE_COMPUTER_VISION_KEY")
 # Streamlit App Configuration
 st.set_page_config(page_title="Document Classification & Summarization", layout="wide")
 st.title("📄 AI-Powered Document Processing System")
+
 
 class DocumentProcessor:
     def __init__(self):
@@ -144,86 +145,46 @@ def extract_citations_references(text):
     prompt = f"Extract citations, references, and links from this document:\n\n{text}"
     return generate_openai_response(prompt)
 
-def get_image_name(analysis_result, index):
-    if analysis_result.description and analysis_result.description.captions:
-        caption = analysis_result.description.captions[0].text.strip()
-        generic_terms = ["diagram", "chart", "graph", "image", "picture"]
-        if caption.lower() in generic_terms:
-            if analysis_result.objects:
-                objects = ", ".join([obj.object_property for obj in analysis_result.objects])
-                return f"{caption} of {objects}"
-            else:
-                return caption
-        else:
-            return caption
-    elif analysis_result.objects:
-        return ", ".join([obj.object_property for obj in analysis_result.objects])
-    else:
-        return f"Image {index}"
-
-def preprocess_pdf(file_bytes):
-    pdf_doc = fitz.open(stream=file_bytes, filetype="pdf")
-    new_pdf = fitz.open()
-    for page in pdf_doc:
-        new_pdf.insert_pdf(pdf_doc, from_page=page.number, to_page=page.number)
-    output_stream = io.BytesIO()
-    new_pdf.save(output_stream)
-    return output_stream.getvalue()
-
-def analyze_document_with_retry(client, model_id, document, max_retries=3):
-    for attempt in range(max_retries):
-        try:
-            poller = client.begin_analyze_document(model_id=model_id, document=document)
-            return poller.result()
-        except Exception as e:
-            if "InvalidContent" in str(e) and attempt < max_retries - 1:
-                delay = 2 ** attempt
-                st.warning(f"Retrying in {delay} seconds...")
-                time.sleep(delay)
-            else:
-                raise
 
 def main():
     processor = DocumentProcessor()
-    uploaded_file = st.file_uploader("Upload your document (PDF, DOCX, PNG, JPG)", type=["pdf", "docx", "png", "jpg"])
+    uploaded_file = st.file_uploader("Upload your document (PDF, DOCX)", type=["pdf", "docx"])
 
     if uploaded_file:
         with st.spinner("Processing document..."):
             try:
-                file_bytes = uploaded_file.read()
-                if uploaded_file.type == "application/pdf":
-                    file_bytes = preprocess_pdf(file_bytes)
+                result, extracted_text = processor.extract_text(uploaded_file)
                 
-                result = analyze_document_with_retry(
-                    processor.form_recognizer_client,
-                    model_id="prebuilt-layout",
-                    document=file_bytes
-                )
-                extracted_text = "\n".join([line.content for page in result.pages for line in page.lines])
-
                 if len(extracted_text) < 50:
                     st.error("Insufficient text extracted - check document quality.")
                     return
 
                 sections = processor.segment_sections(extracted_text)
+                
+                st.subheader("📝 Section-wise Summarization (Extractive)")
+                for section, content in sections.items():
+                    st.markdown(f"### {section}")
+                    summary = processor.generate_extractive_summary(content)
+                    st.write(summary if summary else "No significant content to summarize.")
+
+                with st.expander("Raw Document Analysis", expanded=False):
+                    st.json(result.to_dict())
+
                 overall_summary, section_summary = generate_summaries(extracted_text)
                 classification = classify_document(extracted_text)
                 table_summaries, table_dataframes = analyze_visual_elements(result)
                 keywords = extract_keywords(extracted_text)
                 citations_references = extract_citations_references(extracted_text)
 
-                st.header("Document Analysis Results")
-                
+                st.header("Additional Document Analysis Results")
                 col1, col2 = st.columns(2)
                 with col1:
                     st.subheader("1. Overall Summary")
                     st.markdown(overall_summary or "Not available")
                     st.subheader("2. Classification")
                     st.markdown(classification or "No classification available")
-                    st.subheader("3. Section-wise Summary")
-                    st.markdown(section_summary or "Not available")
                 with col2:
-                    st.subheader("4. Tables Analysis")
+                    st.subheader("3. Tables Analysis")
                     if table_dataframes:
                         for i, df in enumerate(table_dataframes):
                             st.write(f"Table {i+1}")
@@ -231,44 +192,25 @@ def main():
                             st.markdown(table_summaries[i])
                     else:
                         st.write("No tables detected")
-                    st.subheader("5. Key Terms")
+                    st.subheader("4. Key Terms")
                     st.markdown(keywords or "No keywords extracted")
-                    st.subheader("6. References & Links")
+                    st.subheader("5. References & Links")
                     st.markdown(citations_references or "No citations found")
 
                 st.subheader("Images")
-                image_objects = []
-                if uploaded_file.type == "application/pdf":
-                    pdf_doc = fitz.open(stream=file_bytes, filetype="pdf")
-                    for page_index in range(pdf_doc.page_count):
-                        page = pdf_doc[page_index]
-                        for img_index, img_info in enumerate(page.get_images(full=True)):
-                            xref = img_info[0]
-                            base_image = pdf_doc.extract_image(xref)
-                            image_data = base_image["image"]
-                            pil_img = Image.open(io.BytesIO(image_data))
-                            if pil_img.width < 50 or pil_img.height < 50:
-                                image_objects.append((f"Small Image {len(image_objects) + 1} (Page {page_index + 1})", pil_img))
+                for page in result.pages:
+                    for line in page.lines:
+                        # Check if the line contains image data
+                        if hasattr(line, 'content') and line.content:
+                            try:
+                                # Attempt to open the content as an image
+                                image = Image.open(io.BytesIO(line.content))
+                                st.image(image, caption=f"Image on page {page.page_number}")
+                            except Exception as e:
+                                # If it's not an image, continue to the next line
                                 continue
-                            image_stream = io.BytesIO(image_data)
-                            analysis_result = processor.vision_client.analyze_image_in_stream(image_stream, [VisualFeatureTypes.description])
-                            image_name = get_image_name(analysis_result, len(image_objects) + 1)
-                            image_objects.append((f"{image_name} (Page {page_index + 1})", pil_img))
-                elif uploaded_file.type in ["image/png", "image/jpeg"]:
-                    image = Image.open(io.BytesIO(file_bytes))
-                    if image.width < 50 or image.height < 50:
-                        image_objects.append((f"Small Image {len(image_objects) + 1}", image))
-                    else:
-                        image_bytes = io.BytesIO()
-                        image.save(image_bytes, format=uploaded_file.type.split("/")[1])
-                        image_bytes.seek(0)
-                        analysis_result = processor.vision_client.analyze_image_in_stream(image_bytes, [VisualFeatureTypes.description])
-                        image_name = get_image_name(analysis_result, len(image_objects) + 1)
-                        image_objects.append((image_name, image))
 
-                for name, img in image_objects:
-                    st.write(f"**{name}**")
-                    st.image(img, use_container_width=True)
+
 
             except Exception as e:
                 st.error(f"Processing failed: {str(e)}")
