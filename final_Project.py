@@ -15,21 +15,41 @@ import re
 import io
 
 load_dotenv()
+import streamlit as st
+# DOC_INTEL_ENDPOINT = os.getenv("AZURE_FORM_RECOGNIZER_ENDPOINT")
+# DOC_INTEL_KEY = os.getenv("AZURE_FORM_RECOGNIZER_KEY")
+# OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT").rstrip('/')
+# if OPENAI_ENDPOINT:
+#     OPENAI_ENDPOINT = OPENAI_ENDPOINT.rstrip('/')
+# else:
+#     raise ValueError("AZURE_OPENAI_ENDPOINT is not set. Check your environment variables.")
+# OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
+# OPENAI_DEPLOYMENT = os.getenv("OPENAI_DEPLOYMENT")
+# OPENAI_API_VERSION = "2024-02-15-preview"
+# AZURE_LANGUAGE_ENDPOINT = os.getenv("AZURE_LANGUAGE_ENDPOINT")
+# AZURE_LANGUAGE_KEY = os.getenv("AZURE_LANGUAGE_KEY")
+# AZURE_COMPUTER_VISION_ENDPOINT = os.getenv("AZURE_COMPUTER_VISION_ENDPOINT")
+# AZURE_COMPUTER_VISION_KEY = os.getenv("AZURE_COMPUTER_VISION_KEY")
+import streamlit as st
 
-DOC_INTEL_ENDPOINT = os.getenv("AZURE_FORM_RECOGNIZER_ENDPOINT")
-DOC_INTEL_KEY = os.getenv("AZURE_FORM_RECOGNIZER_KEY")
-OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT").rstrip('/')
-if OPENAI_ENDPOINT:
-    OPENAI_ENDPOINT = OPENAI_ENDPOINT.rstrip('/')
-else:
-    raise ValueError("AZURE_OPENAI_ENDPOINT is not set. Check your environment variables.")
-OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
-OPENAI_DEPLOYMENT = os.getenv("OPENAI_DEPLOYMENT")
-OPENAI_API_VERSION = "2024-02-15-preview"
-AZURE_LANGUAGE_ENDPOINT = os.getenv("AZURE_LANGUAGE_ENDPOINT")
-AZURE_LANGUAGE_KEY = os.getenv("AZURE_LANGUAGE_KEY")
-AZURE_COMPUTER_VISION_ENDPOINT = os.getenv("AZURE_COMPUTER_VISION_ENDPOINT")
-AZURE_COMPUTER_VISION_KEY = os.getenv("AZURE_COMPUTER_VISION_KEY")
+# Azure Document Intelligence (Form Recognizer)
+DOC_INTEL_ENDPOINT = st.secrets["azure"]["form_recognizer_endpoint"]
+DOC_INTEL_KEY = st.secrets["azure"]["form_recognizer_key"]
+FORM_RECOGNIZER_API_VERSION = st.secrets["azure"]["form_recognizer_api_version"]
+
+# Azure OpenAI
+OPENAI_ENDPOINT = st.secrets["azure"]["openai_endpoint"]
+OPENAI_KEY = st.secrets["azure"]["openai_key"]
+OPENAI_DEPLOYMENT = st.secrets["azure"]["openai_deployment"]
+OPENAI_API_VERSION = st.secrets["azure"]["openai_api_version"]
+
+# Azure Computer Vision
+AZURE_COMPUTER_VISION_ENDPOINT = st.secrets["azure"]["computer_vision_endpoint"]
+AZURE_COMPUTER_VISION_KEY = st.secrets["azure"]["computer_vision_key"]
+
+# Azure Language
+AZURE_LANGUAGE_ENDPOINT = st.secrets["azure"]["language_endpoint"]
+AZURE_LANGUAGE_KEY = st.secrets["azure"]["language_key"]
 
 st.set_page_config(page_title="Document Classification & Summarization", layout="wide")
 st.title("📄 AI-Powered Document Processing System")
